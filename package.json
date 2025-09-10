@@ -1,0 +1,31 @@
+{
+  "name": "my_next_vacation",
+  "version": "1.0.0",
+  "description": "This project is all about finding my next half board, cheap, family oriented, Israeli vacation.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "npm run test",
+    "playwright": "playwright test",
+    "playwright-ui": "playwright test --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "myNextVacay"
+  },
+  "keywords": [
+    "vacation",
+    "half",
+    "board",
+    "family"
+  ],
+  "author": "Meni Grossman",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "cheerio": "^1.1.2",
+    "luxon": "^3.7.1",
+    "node-telegram-bot-api": "^0.66.0",
+    "playwright": "^1.55.0"
+  }
+}
