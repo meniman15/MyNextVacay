@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "This project is all about finding my next half board, cheap, family oriented, Israeli vacation.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "build": "tsc",
+    "start": "node dist/node/scraper/hotelScraper.js",
+    "dev": "tsx src/node/scraper/hotelScraper.ts",
     "test": "npm run test",
     "playwright": "playwright test",
     "playwright-ui": "playwright test --ui"
@@ -27,5 +30,11 @@
     "luxon": "^3.7.1",
     "node-telegram-bot-api": "^0.66.0",
     "playwright": "^1.55.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }

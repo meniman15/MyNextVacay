@@ -1,8 +1,32 @@
-const { chromium } = require('playwright');
-const { DateTime } = require('luxon');
-const { DAN, FATTAL } = require('../constants/hotelIds');
+import { fattal } from "../constants/hotelIds";
+import { Hotel, HotelChain } from "../constants/hotelIds";
 
-async function checkAllDanHotels() {
+import { chromium } from 'playwright';
+import { DateTime } from 'luxon';
+import { URLSearchParams } from "url";
+
+
+
+type HotelSearchParams = {
+  from: string;
+  to: string;
+  numOfAdults: number;
+  numOfChildren?: number;
+  numOfInfants?: number;
+  childrenAges?: number[];
+};
+
+type FattalProps = {
+  hotel: Hotel;
+  searchParams: HotelSearchParams;
+};
+
+type Deal = {
+  hotelName: string;
+  price: string;
+}
+
+const checkAllDanHotels = async (hotels) => {
   const now = DateTime.now();
   const nextFriday = now.plus({ days: (5 - now.weekday + 7) % 7 });
   const hotelUrl = 'https://www.danhotels.com';
@@ -85,7 +109,7 @@ async function checkAllDanHotels() {
   return deals;
 }
 
-async function checkAllFattalHotels() {
+const checkAllFattalHotels = async () => {
   const now = DateTime.now();
   const nextFriday = now.plus({ days: (5 - now.weekday + 7) % 7 });
   const baseUrl = 'https://www.leonardo-hotels.com';
@@ -159,10 +183,104 @@ async function checkAllFattalHotels() {
   return deals;
 }
 
-async function main() {
+const scrapeSingleHotel = async ({ hotel, searchParams }: FattalProps) => {
+  const baseUrl = 'https://www.leonardo-hotels.com'; // Note: Fattal is under Leonardo?
+
+  const paramsObject: Record<string,string> = ({
+    hotel: hotel.slug ?? '',
+    from: searchParams.from ?? '',
+    to: searchParams.to ?? '',
+    stay: 'leisure',
+    redeemPoints: 'false',
+    paxesConfig: `adults,${searchParams.numOfAdults ?? 1},children,${searchParams.numOfChildren ?? 0},infants,${searchParams.numOfInfants ?? 0}${searchParams.childrenAges ? `,ages,${(searchParams.childrenAges || []).join('-')}` : ''}`,
+  });
+
+  const urlParams = new URLSearchParams(paramsObject);
+  const fullUrl = `${baseUrl}/booking?${urlParams.toString()}`;
+  
+  console.log('Trying URL:', fullUrl);
+  
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  
+  try {
+    console.log('Checking hotel:', hotel.name);
+    await page.goto(fullUrl, { waitUntil: 'networkidle' });
+    
+    // Check if "Half Board" option exists
+    const halfBoardPlan = page.locator('app-booking-room-plan').filter({ hasText: 'Half Board' }).first();
+    const priceLocator = halfBoardPlan.locator('.member-only-pay__button app-price span').first();
+    
+    if (await halfBoardPlan.isVisible()) {
+      console.log(`Half Board option available for ${hotel.name}`);
+      await halfBoardPlan.click();
+      await page.waitForTimeout(200);
+    } else {
+      console.log(`No Half Board option for ${hotel.name}, checking regular prices...`);
+      //await page.screenshot({ path: `fattal_${hotel.slug}.png`, fullPage: true });
+    }
+    
+    if (await priceLocator.isVisible()) {
+      const fullText = await priceLocator.textContent();
+      const match = fullText?.match(/(\d+(?:,\d+)*)/);
+      if (match) {
+        const price = parseFloat(match[1].replace(/,/g, ''));
+        if (price < 2000) {
+          console.log(`Great deal found at ${hotel.name}: ${match[1]} ILS!`);
+          return { name: hotel.name, price: match[1] }; // Return deal
+        } else {
+          console.log(`Found price for ${hotel.name}: ${match[1]} ILS`);
+        }
+      }
+    } else {
+      console.log(`No price found for ${hotel.name}`);
+    }
+    
+    return null; // No deal
+  } catch (error: Error | any) {
+    console.error('Error for', hotel.name, ':', error.message);
+    return null;
+  } finally {
+    await browser.close();
+    await new Promise(resolve => setTimeout(resolve, 200)); // Per-scrape delay for politeness
+  }
+}
+
+const main = async () => {
+  const numOfAdults = 2;
+  const numOfChildren = 1;
+
+  const now = DateTime.now();
+  const nextFriday = now.plus({ days: (5 - now.weekday + 7) % 7 });
+  const fromDate = nextFriday.toFormat("yyyy-MM-dd'T'00:00:00");
+  const toDate = nextFriday.plus({ days: 1 }).toFormat("yyyy-MM-dd'T'00:00:00");
+
+  const hotelData = fattal as HotelChain;
+
+  const cityFilter = 'telAviv';
+
+  const allHotels: Hotel[] = [];
+  if (hotelData.hotelsByCity[cityFilter]) {
+    allHotels.push(...hotelData.hotelsByCity[cityFilter]);
+  } else {
+    Object.values(hotelData.hotelsByCity).forEach((cityHotels: Hotel[]) => {
+      allHotels.push(...cityHotels);
+    });
+  }
+
+  const promises = allHotels.map(hotel => scrapeSingleHotel({ hotel, searchParams: { from: fromDate, to: toDate, numOfAdults, numOfChildren } }));
+  const results = await Promise.allSettled(promises);
+
+  const deals: Deal[] = [];
+  results.forEach(result => {
+    if (result.status === 'fulfilled' && result.value) {
+      deals.push({ hotelName: result.value.name, price: result.value.price });
+    }
+  });
   //checkAllDanHotels();
-  const deals = await checkAllFattalHotels();
-  deals.toSorted((a, b) => a.price - b.price).forEach(deal => console.log(`${deal.name}: ${deal.price} ILS`));
+  //const deals = await checkAllFattalHotels();
+  deals.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
+    .forEach(deal => console.log(`${deal.hotelName}: ${deal.price} ILS`));
 }
 
 main();
