@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist/backend",
+    "rootDir": "./src",
+    "declaration": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "composite": true
+  },
+  "include": [
+    "src/shared/types/**/*.ts",
+    "src/backend/**/*",
+    "src/node/**/*",
+    "src/constants/**/*",
+    "src/shared/constants/hotelIds.ts"
+  ],
+  "exclude": ["node_modules", "dist", "src/frontend"]
+}

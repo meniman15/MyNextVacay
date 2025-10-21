@@ -1,15 +1,33 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "strict": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/frontend/*"],
+      "@/components/*": ["src/frontend/components/*"],
+      "@/hooks/*": ["src/frontend/hooks/*"],
+      "@/utils/*": ["src/frontend/utils/*"],
+      "@/types/*": ["src/shared/types/*"],
+      "@backend/*": ["src/backend/*"],
+      "@scraper/*": ["src/backend/scraper/*"],
+      "@constants/*": ["src/constants/*"],
+      "@shared/*": ["src/shared/*"],
+    }
   },
-  "ts-node": {
-    "esm": true
-  }
+  "include": ["src/frontend/**/*", "src/constants/**/*", "src/shared/**/*"],
+  "references": [{ "path": "./tsconfig.backend.json" }]
 }
