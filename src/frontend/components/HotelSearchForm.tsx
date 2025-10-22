@@ -54,7 +54,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl mx-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Find Your Perfect Half-Board Deal
+          Find Your Perfect Hotel Deal
         </h2>
         <p className="text-gray-600">
           Search across Israeli hotels for the best family-friendly deals under your budget
@@ -70,7 +70,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
           <select
             value={searchParams.hotelChain}
             onChange={(e) => handleInputChange('hotelChain', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full h-14 px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 bg-white"
           >
             <option value="fattal">Leonardo Hotels (Fattal)</option>
             <option value="dan" disabled>Dan Hotels (Coming Soon)</option>
@@ -83,11 +83,11 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
             <MapPin className="inline w-4 h-4 mr-1" />
             Destination
           </label>
-          <select
-            value={searchParams.city || ''}
-            onChange={(e) => handleInputChange('city', e.target.value || null)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
+            <select
+              value={searchParams.city || ''}
+              onChange={(e) => handleInputChange('city', e.target.value || null)}
+              className="w-full h-14 px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all duration-200 bg-white"
+            >
             <option value="">All Cities</option>
             {cities.map(city => (
               <option key={city} value={city}>
@@ -98,31 +98,36 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
         </div>
 
         {/* Date Selection */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Calendar className="inline w-4 h-4 mr-1" />
-              Check-in
+        <div className="grid md:grid-cols-2 gap-6 mt-4">
+          <div className="m-4">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <Calendar className="w-4 h-4 text-green-600" />
+              </div>
+              Check-in Date
             </label>
             <input
               type="date"
               value={searchParams.checkIn}
               onChange={(e) => handleInputChange('checkIn', e.target.value)}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-14 px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 bg-white text-gray-900 font-medium"
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Check-out
+          <div className="space-y-2">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                📅
+              </div>
+              Check-out Date
             </label>
             <input
               type="date"
               value={searchParams.checkOut}
               onChange={(e) => handleInputChange('checkOut', e.target.value)}
               min={searchParams.checkIn}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full h-14 px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 bg-white text-gray-900 font-medium"
               required
             />
           </div>

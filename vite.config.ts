@@ -1,12 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import tailwindcss from '@tailwindcss/vite';
+import tailwindcss from 'tailwindcss';
 
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(),
   ],
   root: 'src/frontend',
   build: {
@@ -23,6 +22,11 @@ export default defineConfig({
       '@backend': path.resolve(__dirname, 'src/backend'),
       '@constants': path.resolve(__dirname, 'src/constants'),
       '@shared': path.resolve(__dirname, 'src/shared'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [tailwindcss()],
     },
   },
   server: {
