@@ -99,7 +99,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
 
         {/* Date Selection */}
         <div className="grid md:grid-cols-2 gap-6 mt-4">
-          <div className="m-4">
+          <div>
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                 <Calendar className="w-4 h-4 text-green-600" />
@@ -115,7 +115,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
               required
             />
           </div>
-          <div className="space-y-2">
+          <div>
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                 📅
