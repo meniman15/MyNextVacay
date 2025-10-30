@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "This project is all about finding my next half board, cheap, family oriented, Israeli vacation.",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "vite",

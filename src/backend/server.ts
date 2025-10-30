@@ -13,7 +13,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const BACKEND_PORT = process.env.PORT || 3001;
+const FRONTEND_PORT = 3000; 
 
 // Security middleware
 app.use(helmet({
@@ -33,7 +34,7 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL || false
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    : [`http://localhost:${FRONTEND_PORT}`, `http://127.0.0.1:${FRONTEND_PORT}`],
   credentials: true,
 }));
 
@@ -47,7 +48,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api', hotelRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -74,10 +75,10 @@ if (process.env.NODE_ENV === 'production') {
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+const server = app.listen(BACKEND_PORT, () => {
+  console.log(`🚀 Server running on port ${BACKEND_PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 API: http://localhost:${PORT}/api`);
+  console.log(`🔗 API: http://localhost:${BACKEND_PORT}/api`);
   if (process.env.NODE_ENV !== 'production') {
     console.log(`🎨 Frontend: http://localhost:3000`);
   }
