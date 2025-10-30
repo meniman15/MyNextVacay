@@ -13,7 +13,8 @@ export const searchHotels = async (req: Request, res: Response): Promise<void> =
       checkIn: searchParams.checkIn,
       checkOut: searchParams.checkOut,
       guests: `${searchParams.numOfAdults}A/${searchParams.numOfChildren}C`,
-      maxPrice: searchParams.maxPrice
+      maxPrice: searchParams.maxPrice,
+      mealPlan: searchParams.mealPlan
     });
 
     // Get hotels based on search criteria
@@ -28,6 +29,7 @@ export const searchHotels = async (req: Request, res: Response): Promise<void> =
       numOfChildren: searchParams.numOfChildren,
       numOfInfants: searchParams.numOfInfants || 0,
       childrenAges: searchParams.childrenAges || [],
+      mealPlan: searchParams.mealPlan || 'Bed & Breakfast'
     };
 
     // Scrape hotels

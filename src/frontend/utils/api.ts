@@ -4,7 +4,7 @@ import { SearchParams, SearchResults } from '../../shared/types';
 
 const API_BASE_URL = process.env.NODE_ENV === 'production' 
   ? '/api' 
-  : 'http://localhost:3000/api';
+  : 'http://localhost:3001/api';
 
 export const searchHotelsApi = async (params: SearchParams): Promise<SearchResults> => {
   const response = await axios.post(`${API_BASE_URL}/search`, params, {

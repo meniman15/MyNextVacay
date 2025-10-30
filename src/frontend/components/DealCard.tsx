@@ -44,7 +44,7 @@ const DealCard: React.FC<DealCardProps> = ({ deal, isGreatDeal, searchParams }) 
           </div>
           
           <p className="text-gray-600 text-sm mb-4">
-            Half Board • Family Friendly • {deal.city}
+            {searchParams.mealPlan} • Family Friendly • {deal.city}
           </p>
           
           <div className="flex items-center justify-between">
@@ -53,7 +53,7 @@ const DealCard: React.FC<DealCardProps> = ({ deal, isGreatDeal, searchParams }) 
                 ₪{deal.price}
               </div>
               <div className="text-sm text-gray-500">
-                per night • includes half board
+                per night • includes {searchParams.mealPlan}
               </div>
             </div>
             

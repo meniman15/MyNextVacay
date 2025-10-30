@@ -5,6 +5,7 @@ import { chromium } from 'playwright';
 import { DateTime } from 'luxon';
 import { URLSearchParams } from "url";
 import { Deal } from "../../shared/types";
+import { is } from "cheerio/dist/commonjs/api/traversing";
 
 
 
@@ -15,6 +16,7 @@ type HotelSearchParams = {
   numOfChildren?: number;
   numOfInfants?: number;
   childrenAges?: number[];
+  mealPlan?: 'Bed & Breakfast' | 'Half Board' | 'Full Board';
 };
 
 type FattalProps = {
@@ -273,39 +275,6 @@ const buildSearchUrl = (hotel: Hotel, searchParams: HotelSearchParams): string =
   return `${baseUrl}/booking?${params.toString()}`;
 };
 
-// Function to parse price and determine city
-const parsePrice = (hotel: Hotel, priceText: string | null, maxPrice = 2000): Deal | null => {
-  if (!priceText) return null;
-
-  const match = priceText.match(/(\d+(?:,\d+)*)/);
-  if (!match) return null;
-
-  const priceString = match[1];
-  const numericPrice = parseFloat(priceString.replace(/,/g, ''));
-
-  // Determine city from hotel data
-  let city = 'unknown';
-  for (const [cityName, cityHotels] of Object.entries(fattal.hotelsByCity)) {
-    if (cityHotels.some(h => h.name === hotel.name)) {
-      city = cityName;
-      break;
-    }
-  }
-
-  const deal: Deal = {
-    hotelName: hotel.name,
-    price: priceString
-  };
-
-  if (numericPrice < maxPrice) {
-    console.log(`🎉 Great deal: ${hotel.name} - ${priceString} ILS`);
-  } else {
-    console.log(`💰 Regular price: ${hotel.name} - ${priceString} ILS`);
-  }
-
-  return deal;
-};
-
 // Function to try multiple price selectors
 const tryExtractPrice = async (page: any, hotel: Hotel): Promise<Deal | null> => {
   const priceSelectors = [
@@ -321,7 +290,7 @@ const tryExtractPrice = async (page: any, hotel: Hotel): Promise<Deal | null> =>
     
     if (await priceLocator.isVisible()) {
       const priceText = await priceLocator.textContent();
-      const deal = parsePrice(hotel, priceText);
+      const deal = parsePriceForMealPlan(page, hotel, priceText);
       
       if (deal) {
         return deal;
@@ -332,16 +301,65 @@ const tryExtractPrice = async (page: any, hotel: Hotel): Promise<Deal | null> =>
   return null;
 };
 
-// Function to handle Half Board selection
-const selectHalfBoardIfAvailable = async (page: any, hotel: Hotel): Promise<void> => {
-  const halfBoardPlan = page.locator('app-booking-room-plan').filter({ hasText: 'Half Board' }).first();
-  
-  if (await halfBoardPlan.isVisible()) {
-    console.log(`✓ Half Board available for ${hotel.name}`);
-    await halfBoardPlan.click();
+// Function to handle Meal Plan selection
+const isMealPlanAvailable = async (page: any, hotel: Hotel, mealPlan: 'Bed & Breakfast' | 'Half Board' | 'Full Board'): Promise<boolean> => {
+  const mealPlanText = mealPlan === 'Full Board' ? 'FULL BOARD' : mealPlan;
+  const mealPlanLocator = page.locator('app-booking-room-plan').filter({ hasText: mealPlanText }).first();
+
+  if (await mealPlanLocator.isVisible()) {
+    console.log(`✓ ${mealPlan} available for ${hotel.name}`);
+    await mealPlanLocator.click();
     await page.waitForTimeout(200);
+    return true;
   } else {
-    console.log(`ℹ No Half Board for ${hotel.name}`);
+    console.log(`ℹ No ${mealPlan} for ${hotel.name}`);
+    return false;
+  }
+};
+
+const parsePriceForMealPlan = async (page: any, hotel: Hotel, mealPlan: string): Promise<Deal | null> => {
+  try {
+    // Click on the meal plan first
+    const mealPlanElement = page.locator('app-booking-room-plan').filter({ 
+      hasText: new RegExp(mealPlan, 'i') 
+    }).first();
+    
+    if (await mealPlanElement.isVisible()) {
+      await mealPlanElement.click();
+      await page.waitForTimeout(1000);
+      
+      // Try to get price from within the same meal plan element
+      // const priceInMealPlan = await mealPlanElement.locator('app-price span, .price-value').first().textContent();
+      // if (priceInMealPlan) {
+      //   return priceInMealPlan;
+      // }
+      
+      // If not found in meal plan element, try general price selectors after selection
+      const generalPriceSelectors = [
+        {type: "member", selector: 'app-member-only-pay app-price span'},
+        {type: "non-member", selector: 'app-not-member-pay app-price span'},
+        //{type: "button", selector: '.member-only-pay__button app-price span'},
+      ];
+      
+      for (const selector of generalPriceSelectors) {
+        const priceElement = mealPlanElement.locator(selector.selector).first();
+        if (await priceElement.isVisible()) {
+          const priceText = await priceElement.textContent();
+          if (priceText) {
+            const deal = { hotelName: hotel.name, hotelSlug: hotel.slug, price: priceText.trim(), isMemeberPrice: selector.type === "member" };
+            return deal;
+          }
+          else {
+            console.log(`ℹ No ${mealPlan} for ${hotel.name}`);
+          }
+        }
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.error(`Error getting price for ${mealPlan}:`, error);
+    return null;
   }
 };
 
@@ -359,8 +377,9 @@ export const scrapeSingleHotel = async (hotel: Hotel, searchParams: HotelSearchP
       timeout: 30000 
     });
 
-    await selectHalfBoardIfAvailable(page, hotel);
-    const deal = await tryExtractPrice(page, hotel);
+    //const isMealAvailable = await isMealPlanAvailable(page, hotel, searchParams.mealPlan || 'Bed & Breakfast');
+    //const deal = isMealAvailable ? await tryExtractPrice(page, hotel) : null;
+    const deal = await parsePriceForMealPlan(page, hotel, searchParams.mealPlan || 'Bed & Breakfast');
 
     if (!deal) {
       console.log(`✗ No price found for ${hotel.name}`);
@@ -509,4 +528,4 @@ const main = async () => {
     .forEach(deal => console.log(`${deal.hotelName}: ${deal.price} ILS`));
 }
 
-main();
+//main();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users, MapPin, Search } from 'lucide-react';
+import { Calendar, Users, MapPin, Search, Utensils } from 'lucide-react';
 import { SearchParams } from '../../shared/types';
 import { fattal } from '../../shared/constants/hotelIds';
 
@@ -17,6 +17,13 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
   isLoading
 }) => {
   const cities = Object.keys(fattal.hotelsByCity);
+
+   const mealPlans = [
+    { value: 'Room Only', label: 'Room Only', description: 'No meals included' },
+    { value: 'Bed & Breakfast', label: 'Bed & Breakfast', description: 'Breakfast included' },
+    { value: 'Half Board', label: 'Half Board', description: 'Breakfast + Dinner' },
+    { value: 'Full Board', label: 'Full Board', description: 'All meals included' },
+  ];
 
   const handleInputChange = (field: keyof SearchParams, value: any) => {
     setSearchParams({
@@ -96,6 +103,29 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({
             ))}
           </select>
         </div>
+
+        {/* Meal Plan Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Utensils className="inline w-4 h-4 mr-1" />
+            Meal Plan
+          </label>
+          <select
+            value={searchParams.mealPlan || 'Bed & Breakfast'}
+            onChange={(e) => handleInputChange('mealPlan', e.target.value)}
+            className="w-full h-14 px-4 py-4 border-2 border-gray-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-100 transition-all duration-200 bg-white"
+          >
+            {mealPlans.map(plan => (
+              <option key={plan.value} value={plan.value}>
+                {plan.label} - {plan.description}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            💡 Half Board is most popular for family vacations
+          </p>
+        </div>
+
 
         {/* Date Selection */}
         <div className="grid md:grid-cols-2 gap-6 mt-4">

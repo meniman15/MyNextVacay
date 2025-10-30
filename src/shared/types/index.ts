@@ -8,11 +8,15 @@ export interface SearchParams {
   numOfInfants: number;
   childrenAges?: number[];
   maxPrice?: number;
+  mealPlan?: 'Bed & Breakfast' | 'Half Board' | 'Full Board';
 }
 
 export interface Deal {
   hotelName: string;
   price: string;
+  isMemeberPrice?: boolean;
+  hotelSlug?: string;
+  city?: string;
 }
 
 export interface SearchResults {

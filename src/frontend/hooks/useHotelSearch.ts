@@ -12,7 +12,8 @@ export const useHotelSearch = () => {
     numOfAdults: 2,
     numOfChildren: 1,
     numOfInfants: 0,
-    maxPrice: 2000
+    maxPrice: 2000,
+    mealPlan: 'Bed & Breakfast',
   });
 
   const [results, setResults] = useState<SearchResults | null>(null);
